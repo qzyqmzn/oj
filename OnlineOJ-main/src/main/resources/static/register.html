@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基于AIGC的程序设计训练系统 - 注册</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#36BFFA',
+                        neutral: '#F5F7FA',
+                        dark: '#1D2129',
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .bg-gradient-blue {
+                background: linear-gradient(135deg, #165DFF 0%, #36BFFA 100%);
+            }
+            .text-gradient {
+                background-clip: text;
+                -webkit-background-clip: text;
+                color: transparent;
+                background-image: linear-gradient(90deg, #165DFF, #36BFFA);
+            }
+            .shadow-blue {
+                box-shadow: 0 8px 24px rgba(22, 93, 255, 0.15);
+            }
+            .input-focus {
+                @apply focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none;
+            }
+            .video-overlay {
+                background: rgba(0, 0, 0, 0.5);
+            }
+            .error-message {
+                color: #dc2626;
+                font-size: 0.875rem;
+                margin-top: 0.25rem;
+            }
+            .input-error {
+                border-color: #dc2626 !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen font-inter flex items-center justify-center p-4 overflow-hidden relative">
+<!-- 图背景 -->
+<div class="absolute inset-0 z-0">
+    <img src="/img/781648.jpg" alt="背景动图" class="absolute w-full h-full object-cover">
+    <!-- 半透明遮罩，增强文字可读性 -->
+    <div class="absolute inset-0 video-overlay"></div>
+</div>
+
+<div class="relative w-full max-w-md z-10">
+    <!-- 装饰元素 -->
+    <div class="absolute -top-10 -right-10 w-40 h-40 bg-primary/30 rounded-full blur-2xl"></div>
+    <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary/30 rounded-full blur-2xl"></div>
+
+    <div class="bg-white rounded-2xl shadow-blue overflow-hidden relative z-10">
+        <!-- 顶部渐变区域 -->
+        <div class="bg-gradient-blue p-6 text-white text-center">
+            <h1 class="text-[clamp(1.5rem,3vw,2rem)] font-bold">基于AIGC的程序设计训练系统</h1>
+            <p class="mt-2 opacity-90">智能辅助，高效学习</p>
+        </div>
+
+        <!-- 表单区域 -->
+        <form action="/register" method="post" class="p-8 space-y-6" id="registerForm">
+            <div>
+                <label for="username" class="block text-sm font-medium text-gray-700 mb-1">用户名</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-user"></i>
+                        </span>
+                    <input type="text" id="username" name="name" placeholder="请输入用户名（3-16位字符）"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 transition-all input-focus">
+                </div>
+                <div id="usernameError" class="error-message hidden"></div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700 mb-1">登录密码</label>
+                <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500">
+                            <i class="fa fa-lock"></i>
+                        </span>
+                    <input type="password" id="password" name="password" placeholder="请输入密码（6-20位，包含字母和数字）"
+                           class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 transition-all input-focus">
+                </div>
+                <div id="passwordError" class="error-message hidden"></div>
+            </div>
+
+            <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-4 rounded-lg transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg flex items-center justify-center">
+                <span>注册</span>
+                <i class="fa fa-arrow-right ml-2"></i>
+            </button>
+
+            <div class="text-center text-sm text-gray-500">
+                已有账号? <a href="/login.html" class="text-primary hover:text-primary/80 font-medium">立即登录</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- 底部信息 -->
+    <div class="mt-6 text-center text-sm text-white/80">
+        <p>© 2025 基于AIGC的程序设计训练系统 qzy</p>
+    </div>
+</div>
+<script>
+    // 当页面访问的是/register路径时，自动跳转到登录页面
+    if (window.location.pathname === '/register') {
+        // 短暂延迟，让用户有时间看到页面（可选）
+        setTimeout(() => {
+            window.location.href = '/login.html';
+        }, 500);
+    }
+
+    // 表单验证逻辑
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const usernameError = document.getElementById('usernameError');
+        const passwordError = document.getElementById('passwordError');
+
+        // 验证用户名：3-16位字符，可包含字母、数字、下划线
+        function validateUsername(username) {
+            const regex = /^[a-zA-Z0-9_]{3,16}$/;
+            if (!username) {
+                return { valid: false, message: '用户名不能为空' };
+            }
+            if (!regex.test(username)) {
+                return { valid: false, message: '用户名必须是3-16位字符，可包含字母、数字和下划线' };
+            }
+            return { valid: true };
+        }
+
+        // 验证密码：6-20位，必须包含字母和数字
+        function validatePassword(password) {
+            const regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,20}$/;
+            if (!password) {
+                return { valid: false, message: '密码不能为空' };
+            }
+            if (!regex.test(password)) {
+                return { valid: false, message: '密码必须是6-20位，且包含字母和数字' };
+            }
+            return { valid: true };
+        }
+
+        // 显示错误信息
+        function showError(element, message) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+            element.previousElementSibling.classList.add('input-error');
+        }
+
+        // 隐藏错误信息
+        function hideError(element) {
+            element.classList.add('hidden');
+            element.textContent = '';
+            element.previousElementSibling.classList.remove('input-error');
+        }
+
+        // 输入框实时验证
+        usernameInput.addEventListener('blur', function() {
+            const result = validateUsername(this.value);
+            if (!result.valid) {
+                showError(usernameError, result.message);
+            } else {
+                hideError(usernameError);
+            }
+        });
+
+        passwordInput.addEventListener('blur', function() {
+            const result = validatePassword(this.value);
+            if (!result.valid) {
+                showError(passwordError, result.message);
+            } else {
+                hideError(passwordError);
+            }
+        });
+
+        // 表单提交验证
+        form.addEventListener('submit', function(event) {
+            let isValid = true;
+
+            // 验证用户名
+            const usernameResult = validateUsername(usernameInput.value);
+            if (!usernameResult.valid) {
+                showError(usernameError, usernameResult.message);
+                isValid = false;
+            } else {
+                hideError(usernameError);
+            }
+
+            // 验证密码
+            const passwordResult = validatePassword(passwordInput.value);
+            if (!passwordResult.valid) {
+                showError(passwordError, passwordResult.message);
+                isValid = false;
+            } else {
+                hideError(passwordError);
+            }
+
+            // 如果验证不通过，阻止表单提交
+            if (!isValid) {
+                event.preventDefault();
+                return;
+            }
+
+            // 验证通过，显示注册成功提示并继续表单提交
+            event.preventDefault(); // 先阻止默认提交
+            alert('注册成功，即将跳转到登录页面');
+
+            // 提交表单数据到后端（保持原有的数据提交功能）
+            form.submit();
+
+            // 跳转到登录页面
+            setTimeout(() => {
+                window.location.href = '/login.html';
+            }, 500);
+        });
+    });
+</script>
+</body>
+</html>

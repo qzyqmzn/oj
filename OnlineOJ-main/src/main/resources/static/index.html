@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>OJ 平台</title>
+    <meta name="description" content="Charcoal is a free Bootstrap 4 UI kit build by @attacomsian at Wired Dots." />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--Bootstrap 4-->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #262626;
+        }
+        .bg-hero {
+            background-color: #262626;
+        }
+        .table {
+            background-color: #333333;
+            color: white;
+        }
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+        .table th, .table td {
+            border-top: 1px solid #444;
+        }
+        .bg-dark {
+            background-color: #262626 !important;
+        }
+        .navbar-dark {
+            background-color: #333333 !important;
+        }
+        .difficulty-easy {
+            color: #00cccc !important; /* 青色 */
+        }
+        .difficulty-medium {
+            color: #ffcc00 !important; /* 黄色 */
+        }
+        .difficulty-hard {
+            color: #ff3300 !important; /* 红色 */
+        }
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            margin-right: 5px;
+            margin-bottom: 5px;
+            border-radius: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark fixed-top sticky-navigation">
+    <a class="navbar-brand font-weight-bold" href="#"> OJ 系统</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#topMenu" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="topMenu">
+        <ul class="navbar-nav ml-auto">
+            <!-- 新增的排行榜按钮 -->
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:8083/rank.html">排行榜</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="http://localhost:8083/achievement.html">成就</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<!--hero section-->
+<section class="bg-hero">
+    <div class="container">
+        <div class="row vh-100">
+            <div class="col-sm-12 my-auto text-center">
+                <h1 style="color: white;">众众队的 OJ 平台</h1>
+                <p class="lead text-capitalize my-4" style="color: #ccc;">
+                    基于 spring 框架实现的在线OJ平台
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!--components-->
+<section class="my-5 pt-5">
+    <div class="container">
+
+        <div class="row mb-5" id="tables">
+            <div class="col-sm-12">
+                <div class="mt-3 mb-5">
+                    <h3 style="color: white;">题目列表</h3> <!-- 原值：默认颜色 -->
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th style="color: white;">编号</th> <!-- 原值：默认颜色 -->
+                            <th style="color: white;">标题</th> <!-- 原值：默认颜色 -->
+                            <th style="color: white;">难度</th> <!-- 原值：默认颜色 -->
+                            <th style="color: white;">标签</th> <!-- 新增列 -->
+                        </tr>
+                        </thead>
+                        <tbody id="problemTable">
+                        <!-- 数据将通过JavaScript动态填充 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+    </div>
+</section>
+
+<!--footer-->
+<section class="py-5 bg-dark">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6 offset-md-3 col-sm-8 offset-sm-2 col-xs-12 text-center">
+                <p class="pt-2 text-muted">
+                    &copy; by GCS and QZY
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+<script src="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/4.0.0-beta.2/js/bootstrap.min.js"></script>
+<script>
+    // 在页面加载的时候, 尝试从服务器获取题目列表. 通过 ajax 的方式来进行获取
+    function getProblems() {
+        // 1. 先通过 ajax 从服务器获取到题目列表.
+        $.ajax({
+            url: "problem",
+            type: "GET",
+            success: function(data, status) {
+                // data 是响应的 body, status 是响应的状态码
+                // 2. 把得到的响应数据给构造成 HTML 片段
+                makeProblemTable(data);
+            }
+        })
+    }
+
+    // 通过这个函数来把数据转换成 HTML 页面片段
+    function makeProblemTable(data) {
+        let problemTable = document.querySelector("#problemTable");
+
+        // 清空表格
+        problemTable.innerHTML = '';
+
+        for (let problem of data) {
+            let tr = document.createElement("tr");
+
+            // 编号列
+            let tdId = document.createElement("td");
+            tdId.innerHTML = problem.id;
+            tdId.style.color = "white";
+            tr.appendChild(tdId);
+
+            // 标题列
+            let tdTitle = document.createElement("td");
+            let a = document.createElement("a");
+            a.innerHTML = problem.title;
+            a.href = 'problemDetail.html?id=' + problem.id;
+            a.target = '_blank';
+            a.style.color = "#3498db";
+            tdTitle.appendChild(a);
+            tr.appendChild(tdTitle);
+
+            // 难度列
+            let tdLevel = document.createElement("td");
+            tdLevel.innerHTML = problem.level;
+
+            // 根据难度设置不同的颜色
+            if (problem.level === "简单") {
+                tdLevel.className = "difficulty-easy";
+            } else if (problem.level === "中等") {
+                tdLevel.className = "difficulty-medium";
+            } else if (problem.level === "困难") {
+                tdLevel.className = "difficulty-hard";
+            } else {
+                tdLevel.style.color = "white";
+            }
+
+            tr.appendChild(tdLevel);
+
+            // 标签列
+            let tdTags = document.createElement("td");
+
+            // 确保description字段存在且不为空
+            if (problem.description && problem.description.trim() !== '') {
+                // 假设description是逗号分隔的标签列表
+                const tags = problem.description.split(',').map(tag => tag.trim());
+
+                // 为每个标签创建一个span元素
+                for (let tag of tags) {
+                    if (tag) { // 确保标签不为空
+                        let tagSpan = document.createElement("span");
+                        tagSpan.className = "tag";
+                        tagSpan.innerHTML = tag;
+                        tdTags.appendChild(tagSpan);
+                    }
+                }
+            } else {
+                // 如果没有标签，显示"无标签"
+                tdTags.innerHTML = '<span class="text-muted">无标签</span>';
+            }
+
+            tr.appendChild(tdTags);
+
+            problemTable.appendChild(tr);
+        }
+    }
+
+    // 页面加载完成后获取题目数据
+    $(document).ready(function() {
+        getProblems();
+    });
+</script>
+</body>
+</html>

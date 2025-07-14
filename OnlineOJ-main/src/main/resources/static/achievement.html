@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>成就界面</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2; /* 降低主色调亮度 */
+            --secondary-color: #4caf50;
+            --accent-color: #ff9800;
+            --dark-color: #e0e0e0; /* 稍微降低文本亮度 */
+            --light-color: #1a1a2e;
+            --gray-color: #2c2c44;
+            --completed-bg: linear-gradient(135deg, #2c538c 0%, #4a90e2 100%); /* 降低已完成成就的亮度 */
+            --locked-bg: linear-gradient(135deg, #1a1a2e 0%, #12121e 100%); /* 更暗的未完成成就背景 */
+            --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f1a; /* 更深的背景色 */
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05); /* 更淡的分隔线 */
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            color: #888; /* 更淡的副标题 */
+            font-size: 1.1rem;
+        }
+
+        #stats {
+            background: var(--gray-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+            min-width: 150px;
+            padding: 15px;
+            border-radius: 8px;
+            transition: var(--transition);
+            background: rgba(255,255,255,0.03); /* 更淡的背景 */
+        }
+
+        .stat-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .stat-item h3 {
+            font-size: 1rem;
+            color: #888; /* 更淡的标题 */
+            margin-bottom: 8px;
+        }
+
+        .stat-item .value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+
+        .total {
+            color: var(--primary-color);
+        }
+
+        .correct {
+            color: var(--secondary-color);
+        }
+
+        .wrong {
+            color: #d9534f;
+        }
+
+        #achievements {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .achievement {
+            background: var(--locked-bg);
+            border-radius: 12px;
+            padding: 25px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: none;
+            color: #ccc; /* 更淡的文本 */
+        }
+
+        .achievement::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: linear-gradient(90deg, #333, #1a1a1a); /* 更暗的顶部边框 */
+            transition: var(--transition);
+        }
+
+        .achievement:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.5);
+        }
+
+        .achievement h3 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .achievement p {
+            color: #888; /* 更淡的描述 */
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+
+        .achievement-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #555; /* 更暗的图标 */
+            transition: var(--transition);
+            position: relative;
+            z-index: 2;
+        }
+
+        .achievement-completed {
+            background: var(--completed-bg);
+            color: white;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.2); /* 降低发光效果 */
+        }
+
+        .achievement-completed::before {
+            background: linear-gradient(90deg, #4a90e2, #2c538c);
+        }
+
+        .achievement-completed .achievement-icon {
+            color: white;
+            animation: pulse 2s infinite;
+        }
+
+        .achievement-completed p {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .achievement.locked::after {
+            content: '🔒';
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 1.2rem;
+            opacity: 0.5; /* 降低锁的透明度 */
+        }
+
+        .achievement.locked .description {
+            color: #666; /* 更暗的锁定描述 */
+            font-style: italic;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); } /* 减小脉冲幅度 */
+            100% { transform: scale(1); }
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--dark-color);
+            position: relative;
+            padding-bottom: 10px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .achievement-grid {
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            #achievements {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .stat-item .value {
+                font-size: 1.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            #stats {
+                flex-direction: column;
+                padding: 15px;
+            }
+
+            #achievements {
+                grid-template-columns: 1fr;
+            }
+
+            .achievement {
+                padding: 20px 15px;
+            }
+
+            .achievement h3 {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <header>
+        <h1>成就中心</h1>
+        <p>记录你的每一步成长，解锁属于你的荣耀</p>
+    </header>
+
+    <div id="stats">
+        <div class="stat-item">
+            <h3>总提交数</h3>
+            <div class="value total" id="total-submit">0</div>
+        </div>
+        <div class="stat-item">
+            <h3>正确数</h3>
+            <div class="value correct" id="correct-num">0</div>
+        </div>
+        <div class="stat-item">
+            <h3>错误数</h3>
+            <div class="value wrong" id="wrong-num">0</div>
+        </div>
+    </div>
+
+    <div class="achievement-grid">
+        <h2 class="section-title">正确率成就</h2>
+        <div id="achievements">
+            <div class="achievement locked" data-achievement="r1">
+                <div class="achievement-icon">🌟</div>
+                <h3>扬帆起航</h3>
+                <p class="description">完成1道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="r10">
+                <div class="achievement-icon">⚡</div>
+                <h3>小试牛刀</h3>
+                <p class="description">完成10道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="r100">
+                <div class="achievement-icon">🎯</div>
+                <h3>初出茅庐</h3>
+                <p class="description">完成100道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="r200">
+                <div class="achievement-icon">📈</div>
+                <h3>渐入佳境</h3>
+                <p class="description">完成200道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="r500">
+                <div class="achievement-icon">🏆</div>
+                <h3>登堂入室</h3>
+                <p class="description">完成500道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="r1000">
+                <div class="achievement-icon">👑</div>
+                <h3>神！！！</h3>
+                <p class="description">完成1000道正确题目</p>
+            </div>
+            <div class="achievement locked" data-achievement="w1">
+                <div class="achievement-icon">💪</div>
+                <h3>没事，再来</h3>
+                <p class="description">经历1次错误</p>
+            </div>
+            <div class="achievement locked" data-achievement="w20">
+                <div class="achievement-icon">🐮</div>
+                <h3>勇敢牛牛不怕困难</h3>
+                <p class="description">经历20次错误</p>
+            </div>
+            <div class="achievement locked" data-achievement="w50">
+                <div class="achievement-icon">📚</div>
+                <h3>《菜，就多练》</h3>
+                <p class="description">经历50次错误</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 从后端接口获取数据
+        fetch('http://localhost:8083/achievement')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const totalSubmitElement = document.getElementById('total-submit');
+                const correctNumElement = document.getElementById('correct-num');
+                const wrongNumElement = document.getElementById('wrong-num');
+                totalSubmitElement.textContent += data.allnumber;
+                correctNumElement.textContent += data.acnumber;
+                wrongNumElement.textContent += data.allnumber - data.acnumber;
+
+                const achievements = document.querySelectorAll('.achievement');
+                achievements.forEach(achievement => {
+                    const achievementName = achievement.dataset.achievement;
+                    if (data[achievementName]) {
+                        achievement.classList.remove('locked');
+                        achievement.classList.add('achievement-completed');
+
+                        // 添加解锁动画
+                        setTimeout(() => {
+                            achievement.style.transform = 'scale(1.05)';
+                            setTimeout(() => {
+                                achievement.style.transform = 'scale(1)';
+                            }, 300);
+                        }, 300);
+                    }
+                });
+            })
+            .catch(error => {
+                console.error('There has been a problem with your fetch operation:', error);
+            });
+
+        // 为所有成就添加点击效果
+        const achievements = document.querySelectorAll('.achievement');
+        achievements.forEach(achievement => {
+            achievement.addEventListener('click', function() {
+                this.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+    });
+</script>
+</body>
+
+</html>

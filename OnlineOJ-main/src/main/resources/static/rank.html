@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>做题排行榜</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #4caf50;
+            --dark-color: #e0e0e0;
+            --light-color: #1a1a2e;
+            --gray-color: #2c2c44;
+            --table-header-bg: #2c538c;
+            --table-row-bg: #1a1a2e;
+            --table-row-hover: #2c2c44;
+            --shadow: 0 4px 12px rgba(0,0,0,0.4);
+            --transition: all 0.3s ease;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0f0f1a;
+            color: var(--dark-color);
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            color: #888;
+            font-size: 1.1rem;
+        }
+
+        .rank-container {
+            background: var(--gray-color);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: var(--shadow);
+        }
+
+        .rank-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .rank-title {
+            font-size: 1.5rem;
+            color: var(--dark-color);
+            position: relative;
+        }
+
+        .rank-title::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 60px;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+        }
+
+        .sort-btn {
+            background: rgba(255,255,255,0.05);
+            border: none;
+            color: var(--dark-color);
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 0.9rem;
+        }
+
+        .sort-btn:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .sort-btn.active {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .rank-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .rank-table th, .rank-table td {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .rank-table th {
+            background: var(--table-header-bg);
+            color: white;
+            font-weight: 600;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .rank-table th:hover {
+            background: #3a6bb3;
+        }
+
+        .rank-table th::after {
+            content: '';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .rank-table th.asc::after {
+            border-bottom: 5px solid white;
+            opacity: 1;
+        }
+
+        .rank-table th.desc::after {
+            border-top: 5px solid white;
+            opacity: 1;
+        }
+
+        .rank-table tbody tr {
+            background: var(--table-row-bg);
+            transition: var(--transition);
+        }
+
+        .rank-table tbody tr:hover {
+            background: var(--table-row-hover);
+            transform: translateX(5px);
+        }
+
+        .rank-table tbody tr:nth-child(1) {
+            color: gold;
+            font-weight: bold;
+        }
+
+        .rank-table tbody tr:nth-child(2) {
+            color: silver;
+            font-weight: bold;
+        }
+
+        .rank-table tbody tr:nth-child(3) {
+            color: #cd7f32;
+            font-weight: bold;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px 0;
+            font-size: 1.2rem;
+            color: #888;
+        }
+
+        .loading::after {
+            content: '加载中...';
+            animation: dots 1.5s infinite;
+        }
+
+        @keyframes dots {
+            0%, 20% { content: '加载中.'; }
+            40% { content: '加载中..'; }
+            60% { content: '加载中...'; }
+            80%, 100% { content: '加载中.'; }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 50px 0;
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .empty-state p {
+            font-size: 1.1rem;
+            color: #888;
+        }
+
+        @media (max-width: 768px) {
+            .rank-header {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .rank-table th, .rank-table td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <header>
+        <h1>做题排行榜</h1>
+        <p>查看全站用户的做题数据排名</p>
+    </header>
+
+    <div class="rank-container">
+        <div class="rank-header">
+            <div class="rank-title">全站排名</div>
+            <div class="sort-controls">
+                <button class="sort-btn active" data-sort="zql">按正确率排序</button>
+                <button class="sort-btn" data-sort="acnumber">按正确数排序</button>
+                <button class="sort-btn" data-sort="allnumber">按总题数排序</button>
+            </div>
+        </div>
+
+        <div id="loading" class="loading"></div>
+        <div id="empty-state" class="empty-state" style="display: none;">
+            <i class="fas fa-chart-bar"></i>
+            <p>暂无排名数据</p>
+        </div>
+
+        <table id="rank-table" class="rank-table" style="display: none;">
+            <thead>
+            <tr>
+                <th data-col="rank">排名</th>
+                <th data-col="name">用户名</th>
+                <th data-col="allnumber">总做题数</th>
+                <th data-col="acnumber">正确数</th>
+                <th data-col="zql" class="asc">正确率</th>
+            </tr>
+            </thead>
+            <tbody id="rank-body">
+            <!-- 数据将通过JavaScript动态填充 -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const rankBody = document.getElementById('rank-body');
+        const rankTable = document.getElementById('rank-table');
+        const loading = document.getElementById('loading');
+        const emptyState = document.getElementById('empty-state');
+        let rankData = [];
+        let currentSort = { column: 'zql', direction: 'asc' };
+
+        // 获取排名数据
+        fetch('http://localhost:8083/getsort')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                rankData = data;
+                renderTable(rankData);
+
+                // 隐藏加载状态，显示表格
+                loading.style.display = 'none';
+                rankTable.style.display = 'table';
+
+                // 如果没有数据，显示空状态
+                if (data.length === 0) {
+                    rankTable.style.display = 'none';
+                    emptyState.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('获取排名数据失败:', error);
+                loading.textContent = '加载失败，请重试';
+                loading.style.color = '#d9534f';
+            });
+
+        // 渲染表格
+        function renderTable(data) {
+            rankBody.innerHTML = '';
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+
+                // 格式化百分比
+                const accuracyPercentage = (item.zql * 100).toFixed(2) + '%';
+
+                row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${item.name}</td>
+                        <td>${item.allnumber}</td>
+                        <td>${item.acnumber}</td>
+                        <td>${accuracyPercentage}</td>
+                    `;
+
+                rankBody.appendChild(row);
+            });
+        }
+
+        // 表头排序功能
+        document.querySelectorAll('th[data-col]').forEach(th => {
+            th.addEventListener('click', () => {
+                const column = th.getAttribute('data-col');
+
+                // 重置所有表头的排序指示器
+                document.querySelectorAll('th[data-col]').forEach(t => {
+                    t.classList.remove('asc', 'desc');
+                });
+
+                // 设置当前排序方向
+                if (currentSort.column === column) {
+                    currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                } else {
+                    currentSort.column = column;
+                    currentSort.direction = 'asc';
+                }
+
+                // 更新排序指示器
+                th.classList.add(currentSort.direction);
+
+                // 排序数据
+                const sortedData = [...rankData].sort((a, b) => {
+                    if (currentSort.direction === 'asc') {
+                        return a[currentSort.column] - b[currentSort.column];
+                    } else {
+                        return b[currentSort.column] - a[currentSort.column];
+                    }
+                });
+
+                // 重新渲染表格
+                renderTable(sortedData);
+            });
+        });
+
+        // 按钮排序功能
+        document.querySelectorAll('.sort-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 移除所有按钮的活动状态
+                document.querySelectorAll('.sort-btn').forEach(b => {
+                    b.classList.remove('active');
+                });
+
+                // 添加当前按钮的活动状态
+                btn.classList.add('active');
+
+                // 获取排序类型
+                const sortType = btn.getAttribute('data-sort');
+
+                // 设置排序字段
+                currentSort.column = sortType;
+
+                // 重置所有表头的排序指示器
+                document.querySelectorAll('th[data-col]').forEach(t => {
+                    t.classList.remove('asc', 'desc');
+                });
+
+                // 设置默认排序方向为降序
+                currentSort.direction = 'desc';
+
+                // 更新对应的表头排序指示器
+                document.querySelector(`th[data-col="${sortType}"]`).classList.add('desc');
+
+                // 排序数据
+                const sortedData = [...rankData].sort((a, b) => {
+                    return b[currentSort.column] - a[currentSort.column];
+                });
+
+                // 重新渲染表格
+                renderTable(sortedData);
+            });
+        });
+    });
+</script>
+</body>
+
+</html>

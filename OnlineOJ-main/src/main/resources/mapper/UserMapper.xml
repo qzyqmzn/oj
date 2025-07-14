@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.onlineoj.dao.UserMapper">
+    <select id="selectByName" resultType="com.example.onlineoj.model.User">
+        select * from user where name=#{name}
+    </select>
+    <insert id="addUser">
+        insert into user (name,password,role,allnumber,acnumber) values (#{name},#{password},0,0,0)
+    </insert>
+    <insert id="insertstudydata">
+        insert into studydata(id, user, date, yesno) VALUES (#{id}, #{user}, #{date}, #{yesno})
+    </insert>
+
+    <update id="updateUserStatistics" parameterType="com.example.onlineoj.model.User">
+        UPDATE user
+        SET
+            allnumber = #{allnumber},
+            acnumber = #{acnumber}
+        WHERE id = #{id}
+    </update>
+    <select id="selectUsersByAcnumber" resultType="com.example.onlineoj.model.User">
+        SELECT * FROM user
+        WHERE role = 0
+        ORDER BY acnumber DESC
+    </select>
+
+
+
+</mapper>
